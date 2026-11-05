@@ -1,0 +1,28 @@
+name: Windows build
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        id: msys2
+        with:
+          msystem: UCRT64
+          update: true
+          install: mingw-w64-ucrt-x86_64-gcc
+      - name: Fetch pinned dependencies
+        shell: pwsh
+        run: ./setup.ps1
+      - name: Build Release
+        shell: pwsh
+        run: ./build.ps1 -Configuration Release -ToolchainBin '${{ steps.msys2.outputs.msys2-location }}/ucrt64/bin'
+      - name: Test without interactive desktop
+        shell: pwsh
+        run: |
+          $env:PATH = '${{ steps.msys2.outputs.msys2-location }}/ucrt64/bin;' + $env:PATH
+          ./.tools/cmake/data/bin/ctest.exe --test-dir build/Release --output-on-failure -E app_smoke

@@ -1,0 +1,10 @@
+build/
+.tools/
+vendor/
+portable_deps/
+publication_review/
+workspace/
+captures/
+dist/
+imgui.ini
+__pycache__/
